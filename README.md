@@ -1,1 +1,1 @@
-Go/Weiqi/Baduk backend written in Haskell.
+Go/Weiqi/Baduk backend written in Haskell. With frontend to follow. 
