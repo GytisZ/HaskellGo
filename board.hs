@@ -1,5 +1,6 @@
 import Data.Graph
 import Data.Maybe
+import Data.List
 
 data Coordinate = Coordinate Int deriving(Eq) 
 data Colour     = Black | White deriving(Eq)
@@ -22,14 +23,23 @@ invertColour :: Colour -> Colour
 invertColour Black = White
 invertColour White = Black
 
--- first element from a triple
+-- elements from a triple
 first :: (a, b, c) -> a  
 first (x, _, _) = x  
+
+second :: (a, b, c) -> b  
+second (_, x, _) = x  
+
+third :: (a, b, c) -> c  
+third (_, _, x) = x  
 
 -- get list of adjecent vertices
 adjacent :: Graph -> Vertex -> [Vertex]
 adjacent g v = [ u | u <- vertices g, elem (u, v) edgeset]
     where edgeset = edges g
+
+showCoord :: Coordinate -> Int
+showCoord (Coordinate x) = x
 
 -- check if the given coordinate is on the board
 isValidCoordinate :: Board -> Coordinate -> Bool
@@ -66,5 +76,27 @@ isSuicide board game (Coordinate x) col =  isSurrounded && doesntKill
 
 -- add a new stone to the game 
 addStone :: Board -> Game  -> Coordinate -> Colour -> Game
-addStone = undefined  
-
+addStone board game (Coordinate x) col = output 
+    where
+        nghbFriendly   = [ i | i <- adjacent board x, fmap first (game i)
+                       == Just col] 
+        nghbUnfriendly = [ i | i <- adjacent board x, fmap first (game i) == 
+                       Just (invertColour col) ]
+        newLiberties   = (nub possLib) \\ fmap Coordinate
+                       ( x:nghbFriendly ++ nghbUnfriendly )
+        possLib        = concat (catMaybes (map (fmap third) $ map game nghbFriendly) 
+                       ) ++ (fmap Coordinate (adjacent board x))
+        updatedGroup   = nub ( (Coordinate x): concat (catMaybes (map (fmap second) 
+                       $ map game nghbFriendly)))
+        deadGroups     = concat [ second (fromJust (game i)) | i <- nghbUnfriendly
+                       , numLiberties game (Coordinate i) == 1 ]
+        output         = \v -> if 
+                                   Coordinate v `elem` updatedGroup
+                               then 
+                                   Just (col, newLiberties, updatedGroup)
+                               else if 
+                                   Coordinate v `elem` deadGroups
+                               then
+                                   Nothing
+                               else
+                                   game v
