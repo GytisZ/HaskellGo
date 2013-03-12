@@ -82,14 +82,16 @@ addStone board game (Coordinate x) col = output
                        == Just col] 
         nghbUnfriendly = [ i | i <- adjacent board x, fmap first (game i) == 
                        Just (invertColour col) ]
-        newLiberties   = (nub possLib) \\ fmap Coordinate
-                       ( x:nghbFriendly ++ nghbUnfriendly )
-        possLib        = concat (catMaybes (map (fmap third) $ map game nghbFriendly) 
-                       ) ++ (fmap Coordinate (adjacent board x))
-        updatedGroup   = nub ( (Coordinate x): concat (catMaybes (map (fmap second) 
-                       $ map game nghbFriendly)))
         deadGroups     = concat [ second (fromJust (game i)) | i <- nghbUnfriendly
                        , numLiberties game (Coordinate i) == 1 ]
+        newLiberties   = ((nub possLib ) \\ fmap Coordinate
+                       ( x:nghbFriendly ++ nghbUnfriendly )) ++ deadLib
+        possLib        = concat (catMaybes (map (fmap third) $ map game nghbFriendly) 
+                       ) ++ (fmap Coordinate (adjacent board x))
+        deadLib         = [Coordinate i | Coordinate i <- deadGroups, fmap Coordinate
+                       ( adjacent board i ) `intersect` updatedGroup /= [] ]
+        updatedGroup   = nub ( (Coordinate x): concat (catMaybes (map (fmap second) 
+                       $ map game nghbFriendly)))
         output         = \v -> if 
                                    Coordinate v `elem` updatedGroup
                                then 
