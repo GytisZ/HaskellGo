@@ -2,8 +2,8 @@ import Data.Graph
 import Data.Maybe
 import Data.List
 
-data Coordinate = Coordinate Int deriving(Eq) 
-data Colour     = Black | White deriving(Eq)
+data Coordinate = Coordinate Int deriving(Eq, Show) 
+data Colour     = Black | White deriving(Eq, Show)
 type Board      = Graph 
 -- every stone contains has the information about all stones in
 -- it's group and and the liberties
@@ -93,7 +93,7 @@ addStone board game (Coordinate x) col = output
         output         = \v -> if 
                                    Coordinate v `elem` updatedGroup
                                then 
-                                   Just (col, newLiberties, updatedGroup)
+                                   Just (col, updatedGroup, newLiberties )
                                else if 
                                    Coordinate v `elem` deadGroups
                                then
